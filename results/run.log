@@ -1,0 +1,344 @@
+...................                                                      [100%]
+19 passed in 0.63s
+
+################ experiments/exp1_reproduce.py --runs 30 ################
+  wrote figures/fig1_rate_comparison.pdf
+
+========================================================================
+Matrix 1:  A = diag(1000 : -1 : 1)   (test suite 1, r = 0.999)
+========================================================================
+  lambda_1 = 1000, lambda_2 = 999, r = 0.999000
+  theory: accelerated rate rho = 0.956246, predicted speedup = 44.72x
+     power:  2001 matvecs, final residual 1.377e-01, converged=False
+    static:   777 matvecs, final residual 9.948e-13, converged=True
+   dynamic:   683 matvecs, final residual 9.785e-13, converged=True
+  power (uncapped): 27619 matvecs, converged=True
+  measured speedup vs power:  static 35.55x, dynamic 40.44x  (theory 44.72x)
+  wrote figures/fig3_matrix1.pdf
+
+========================================================================
+SuiteSparse benchmarks from the paper's test suites 1 and 2
+========================================================================
+  Kuu: n=7102, lambda_1=54.0821, lambda_2=53.9817, r=0.9981 (paper reports r=0.9981)
+       power:  2001 matvecs, residual 2.456e-03, converged=False
+      static:  1166 matvecs, residual 9.606e-13, converged=True
+     dynamic:   528 matvecs, residual 9.757e-13, converged=True
+  Muu: n=7102, lambda_1=0.000839895, lambda_2=0.000839188, r=0.9992 (paper reports r=0.9992)
+       power:  2001 matvecs, residual 6.392e-08, converged=False
+      static:   728 matvecs, residual 8.850e-13, converged=True
+     dynamic:   292 matvecs, residual 9.464e-13, converged=True
+  ash292: n=292, lambda_1=9.15222, lambda_2=8.37687, r=0.9153 (paper reports r=0.9153)
+       power:   313 matvecs, residual 9.272e-13, converged=True
+      static:    75 matvecs, residual 7.493e-13, converged=True
+     dynamic:    73 matvecs, residual 8.004e-13, converged=True
+  bcspwr06: n=1454, lambda_1=5.61949, lambda_2=5.51473, r=0.9814 (paper reports r=0.9814)
+       power:  1360 matvecs, residual 9.991e-13, converged=True
+      static:   154 matvecs, residual 8.394e-13, converged=True
+     dynamic:   145 matvecs, residual 9.220e-13, converged=True
+  wrote figures/exp1_suitesparse.pdf
+
+========================================================================
+Sensitivity to the initial vector (30 random starts)
+========================================================================
+  diag(200:-1:1)  (r = 0.9950)
+       power: min  2001  max  2001  mean  2001.00  std    0.00
+      static: min   326  max   358  mean   336.40  std    8.24
+     dynamic: min   287  max   335  mean   309.03  std    9.93
+  diag(linspace(-99,100,200))  (r = 0.9900)
+       power: min  2001  max  2001  mean  2001.00  std    0.00
+      static: min   240  max   306  mean   262.70  std   11.76
+     dynamic: min   253  max   889  mean   387.33  std  117.80
+
+wrote results/exp1_reproduce.csv
+
+========================================================================
+PHASE 1 GATE
+========================================================================
+  [PASS] dynamic momentum converges on Matrix 1
+  [PASS] dynamic beats plain power by >5x (40.4x measured)
+  [PASS] measured speedup is within 25% of the predicted 44.7x
+  [PASS] dynamic is at least as fast as the optimal static method
+  [PASS] dynamic beta_k settles near beta_opt
+
+  Phase 1 gate: PASS -- proceed to Phase 2
+
+################ experiments/exp2_pagerank.py --graphs wiki-Vote cit-HepPh web-Stanford ################
+
+========================================================================
+Graph: wiki-Vote
+========================================================================
+  GoogleMatrix('wiki-Vote', n=7115, nnz=103689, d=0.85, dangling=1005)
+    dangling nodes: 1,005 (14.1%)
+  [PASS] matches networkx.pagerank (l1 error 3.559e-10, tolerance 1.4e-08); fixed-point residual ||Gx-x||_1 = 1.40e-15
+  [ OK ] |lambda_2(G)| = 0.501427, d = 0.85  -> lambda_2/d = 0.5899  (bound SLACK: d^2/4 overshoots)
+    real-spectrum theory would predict 1.90x (rate 0.5014 -> 0.2688), beta_opt = 0.062857
+             power:     39 mv       3.2 ms  res 5.28e-13   1.00x  converged   
+          static_d:     78 mv       6.8 ms  res 9.33e-13   0.50x  converged   
+   --   DIVERGED    l1=6.12e-02 top100=0.920
+      dynamic_safe:     68 mv       5.8 ms  res 8.87e-13   0.57x  converged   
+     dynamic_guard:     68 mv       5.8 ms  res 8.87e-13   0.57x  converged   
+
+========================================================================
+Graph: cit-HepPh
+========================================================================
+  GoogleMatrix('cit-HepPh', n=34546, nnz=421534, d=0.85, dangling=2393)
+    dangling nodes: 2,393 (6.9%)
+  [PASS] matches networkx.pagerank (l1 error 1.809e-08, tolerance 6.9e-08); fixed-point residual ||Gx-x||_1 = 4.42e-16
+  [ OK ] |lambda_2(G)| = 0.850000, d = 0.85  -> lambda_2/d = 1.0000  (bound TIGHT: beta=d^2/4 is exactly optimal)
+    real-spectrum theory would predict 3.60x (rate 0.8500 -> 0.5567), beta_opt = 0.180625
+             power:    126 mv      41.0 ms  res 9.14e-13   1.00x  converged   
+          static_d:    162 mv      55.2 ms  res 7.63e-13   0.78x  converged   
+   --   DIVERGED    l1=1.28e-01 top100=0.870
+      dynamic_safe:    153 mv      52.9 ms  res 7.84e-13   0.82x  converged   
+     dynamic_guard:    153 mv      51.8 ms  res 7.84e-13   0.82x  converged   
+
+========================================================================
+Graph: web-Stanford
+========================================================================
+  GoogleMatrix('web-Stanford', n=281903, nnz=2312497, d=0.85, dangling=172)
+    dangling nodes: 172 (0.1%)
+  [PASS] n > 100,000: NetworkX cross-check skipped; fixed-point residual ||Gx-x||_1 = 5.22e-15
+  [ OK ] |lambda_2(G)| = 0.850000, d = 0.85  -> lambda_2/d = 1.0000  (bound TIGHT: beta=d^2/4 is exactly optimal)
+    real-spectrum theory would predict 3.60x (rate 0.8500 -> 0.5567), beta_opt = 0.180625
+             power:    152 mv     498.4 ms  res 8.61e-13   1.00x  converged   
+   --   DIVERGED    l1=2.00e+00 top100=0.000
+   --   DIVERGED    l1=2.44e-01 top100=0.770
+      dynamic_safe:    362 mv    1301.3 ms  res 9.02e-13   0.42x  converged   
+     dynamic_guard:    312 mv    1098.1 ms  res 9.59e-13   0.49x  converged   
+  wrote figures/exp2_pagerank_convergence.pdf
+
+wrote results/exp2_pagerank.csv
+
+========================================================================
+PHASE 2/3 SUMMARY -- matrix-vector products
+========================================================================
+method        dynamic_guard  dynamic_paper  dynamic_safe  power  static_d
+graph                                                                    
+cit-HepPh               153           1005           153    126       162
+web-Stanford            312           1006           362    152      1014
+wiki-Vote                68           1018            68     39        78
+
+========================================================================
+speedup over the power iteration
+========================================================================
+method        dynamic_guard  dynamic_safe  power  static_d
+graph                                                     
+cit-HepPh              0.82          0.82   1.00      0.78
+web-Stanford           0.49          0.42   1.00       NaN
+wiki-Vote              0.57          0.57   1.00      0.50
+
+  Phase 2 gate: PASS
+
+################ experiments/exp3_damping.py --graphs cit-HepPh web-Stanford wiki-Vote ################
+
+========================================================================
+Theoretical prediction (r = d for the Google matrix)
+========================================================================
+        d    rho(d)   predicted speedup
+     0.85    0.5567               3.60x
+      0.9    0.6268               4.43x
+     0.95    0.7239               6.30x
+     0.99    0.8676              14.13x
+    0.999    0.9562              44.72x
+
+========================================================================
+Damping sweep: cit-HepPh
+========================================================================
+  GoogleMatrix('cit-HepPh', n=34546, nnz=421534, d=0.85, dangling=2393)
+    d=0.85  : power=126    static_d=162(0.78x)  dynamic_paper=1005!(--)  dynamic_safe=153(0.82x)  dynamic_guard=153(0.82x) | theory 3.60x
+    d=0.9   : power=193    static_d=526(0.37x)  dynamic_paper=1005!(--)  dynamic_safe=491(0.39x)  dynamic_guard=161(1.20x) | theory 4.43x
+    d=0.95  : power=395    static_d=1004!(--)  dynamic_paper=1005!(--)  dynamic_safe=173(2.28x)  dynamic_guard=354(1.12x) | theory 6.30x
+    d=0.99  : power=2005   static_d=1004!(--)  dynamic_paper=1005!(--)  dynamic_safe=492(4.08x)  dynamic_guard=1749(1.15x) | theory 14.13x
+    d=0.999 : power=19665  static_d=1004!(--)  dynamic_paper=1005!(--)  dynamic_safe=17568(1.12x)  dynamic_guard=17043(1.15x) | theory 44.72x
+
+========================================================================
+Damping sweep: web-Stanford
+========================================================================
+  GoogleMatrix('web-Stanford', n=281903, nnz=2312497, d=0.85, dangling=172)
+    d=0.85  : power=152    static_d=1014!(--)  dynamic_paper=1006!(--)  dynamic_safe=362(0.42x)  dynamic_guard=312(0.49x) | theory 3.60x
+    d=0.9   : power=233    static_d=1003!(--)  dynamic_paper=1006!(--)  dynamic_safe=485(0.48x)  dynamic_guard=286(0.81x) | theory 4.43x
+    d=0.95  : power=478    static_d=1003!(--)  dynamic_paper=1006!(--)  dynamic_safe=1059(0.45x)  dynamic_guard=832(0.57x) | theory 6.30x
+    d=0.99  : power=2428   static_d=1003!(--)  dynamic_paper=1006!(--)  dynamic_safe=3927(0.62x)  dynamic_guard=5453(0.45x) | theory 14.13x
+    d=0.999 : power=23886  static_d=1003!(--)  dynamic_paper=1006!(--)  dynamic_safe=33945(0.70x)  dynamic_guard=23939(1.00x) | theory 44.72x
+
+========================================================================
+Damping sweep: wiki-Vote
+========================================================================
+  GoogleMatrix('wiki-Vote', n=7115, nnz=103689, d=0.85, dangling=1005)
+    d=0.85  : power=39     static_d=78(0.50x)  dynamic_paper=1018!(--)  dynamic_safe=68(0.57x)  dynamic_guard=68(0.57x) | theory 3.60x
+    d=0.9   : power=42     static_d=117(0.36x)  dynamic_paper=1018!(--)  dynamic_safe=100(0.42x)  dynamic_guard=100(0.42x) | theory 4.43x
+    d=0.95  : power=46     static_d=301(0.15x)  dynamic_paper=1016!(--)  dynamic_safe=249(0.18x)  dynamic_guard=42(1.10x) | theory 6.30x
+    d=0.99  : power=49     static_d=1003!(--)  dynamic_paper=1016!(--)  dynamic_safe=56(0.88x)  dynamic_guard=45(1.09x) | theory 14.13x
+    d=0.999 : power=50     static_d=1003!(--)  dynamic_paper=1016!(--)  dynamic_safe=56(0.89x)  dynamic_guard=46(1.09x) | theory 44.72x
+
+wrote results/exp3_damping.csv   (! = diverged, * = hit the iteration cap)
+  wrote figures/exp3_damping_sweep.pdf
+
+========================================================================
+MEASURED vs PREDICTED SPEEDUP
+========================================================================
+method              dynamic_guard  dynamic_safe  static_d  theory
+graph        d                                                   
+cit-HepPh    0.850           0.82          0.82      0.78    3.60
+             0.900           1.20          0.39      0.37    4.43
+             0.950           1.12          2.28       NaN    6.30
+             0.990           1.15          4.08       NaN   14.13
+             0.999           1.15          1.12       NaN   44.72
+web-Stanford 0.850           0.49          0.42       NaN    3.60
+             0.900           0.81          0.48       NaN    4.43
+             0.950           0.57          0.45       NaN    6.30
+             0.990           0.45          0.62       NaN   14.13
+             0.999           1.00          0.70       NaN   44.72
+wiki-Vote    0.850           0.57          0.57      0.50    3.60
+             0.900           0.42          0.42      0.36    4.43
+             0.950           1.10          0.18      0.15    6.30
+             0.990           1.09          0.88       NaN   14.13
+             0.999           1.09          0.89       NaN   44.72
+
+################ experiments/exp4_ranking.py --graph cit-HepPh --dampings 0.85 0.99 ################
+
+========================================================================
+cit-HepPh, d = 0.85: residual convergence vs. ranking convergence
+========================================================================
+           power: residual 1e-12 at    126 mv | precision@100=1.0 at      8 mv | tau>0.99 at      7 mv | ranking ready  15.8x sooner
+        static_d: residual 1e-12 at    162 mv | precision@100=1.0 at     26 mv | tau>0.99 at     31 mv | ranking ready   6.2x sooner
+    dynamic_safe: residual 1e-12 at    153 mv | precision@100=1.0 at     17 mv | tau>0.99 at     21 mv | ranking ready   9.0x sooner
+   dynamic_guard: residual 1e-12 at    153 mv | precision@100=1.0 at     17 mv | tau>0.99 at     21 mv | ranking ready   9.0x sooner
+
+========================================================================
+cit-HepPh, d = 0.99: residual convergence vs. ranking convergence
+========================================================================
+           power: residual 1e-12 at   2005 mv | precision@100=1.0 at      7 mv | tau>0.99 at      9 mv | ranking ready 286.4x sooner
+        static_d: residual 1e-12 at   1004 mv | precision@100=1.0 at   None mv | tau>0.99 at   None mv | ranking ready   nanx sooner
+    dynamic_safe: residual 1e-12 at    492 mv | precision@100=1.0 at     16 mv | tau>0.99 at     17 mv | ranking ready  30.8x sooner
+   dynamic_guard: residual 1e-12 at   1749 mv | precision@100=1.0 at     16 mv | tau>0.99 at     17 mv | ranking ready 109.3x sooner
+
+wrote results/exp4_ranking.csv and results/exp4_ranking_curves.csv
+  wrote figures/exp4_ranking_quality.pdf
+
+========================================================================
+RESIDUAL CONVERGENCE vs RANKING CONVERGENCE
+========================================================================
+    graph    d        method   k  matvecs_residual  matvecs_precision  matvecs_kendall  ranking_speedup  converged
+cit-HepPh 0.85         power 100               126                8.0              7.0        15.750000       True
+cit-HepPh 0.85      static_d 100               162               26.0             31.0         6.230769       True
+cit-HepPh 0.85  dynamic_safe 100               153               17.0             21.0         9.000000       True
+cit-HepPh 0.85 dynamic_guard 100               153               17.0             21.0         9.000000       True
+cit-HepPh 0.99         power 100              2005                7.0              9.0       286.428571       True
+cit-HepPh 0.99      static_d 100              1004                NaN              NaN              NaN      False
+cit-HepPh 0.99  dynamic_safe 100               492               16.0             17.0        30.750000       True
+cit-HepPh 0.99 dynamic_guard 100              1749               16.0             17.0       109.312500       True
+
+################ experiments/exp5_spectrum.py --graphs cit-HepPh wiki-Vote ################
+
+========================================================================
+Worst-case-safe beta over the disk |lambda| <= d (no graph needed)
+========================================================================
+        d   beta = d^2/4    safe beta  ratio
+    0.850       0.180625     0.069375     2.6x too large
+    0.950       0.225625     0.024375     9.3x too large
+    0.990       0.245025     0.004975    49.3x too large
+
+========================================================================
+Spectral diagnosis: cit-HepPh
+========================================================================
+  GoogleMatrix('cit-HepPh', n=34546, nnz=421534, d=0.85, dangling=2393)
+    d=0.85:
+       paper's beta = d^2/4 = 0.180625  ->  true rate 0.8436  
+       largest stable beta   = 0.217242
+       best beta             = 0.147199  ->  rate 0.7407 vs power 0.8500   (1.85x achievable, 3.60x predicted by real-spectrum theory)
+       worst-case-safe beta  = 0.069375  (bound over |lambda| <= d)
+       sampled modes overtaking the dominant one: 0 of 179
+       EMPIRICAL CHECK at beta_best: power 98 mv vs static 78 mv  ->  1.26x measured vs 1.85x predicted from the sample   [SAMPLE INCOMPLETE: prediction optimistic]
+    d=0.95:
+       paper's beta = d^2/4 = 0.225625  ->  true rate 1.0970  (DIVERGES)
+       largest stable beta   = 0.208552
+       best beta             = 0.183842  ->  rate 0.8973 vs power 0.9500   (2.11x achievable, 6.30x predicted by real-spectrum theory)
+       worst-case-safe beta  = 0.024375  (bound over |lambda| <= d)
+       sampled modes overtaking the dominant one: 4 of 179
+       EMPIRICAL CHECK at beta_best: power 305 mv vs static 208 mv  ->  1.47x measured vs 2.11x predicted from the sample   [SAMPLE INCOMPLETE: prediction optimistic]
+       worst: lambda = +0.2451-0.3947j  |lambda| = 0.4646, arg = -0.323pi, |mu| = 0.7198 > 0.6561
+    d=0.99:
+       paper's beta = d^2/4 = 0.245025  ->  true rate 1.3147  (DIVERGES)
+       largest stable beta   = 0.204739
+       best beta             = 0.199600  ->  rate 0.9774 vs power 0.9900   (2.27x achievable, 14.13x predicted by real-spectrum theory)
+       worst-case-safe beta  = 0.004975  (bound over |lambda| <= d)
+       sampled modes overtaking the dominant one: 61 of 179
+       EMPIRICAL CHECK at beta_best: power 1548 mv vs static 959 mv  ->  1.61x measured vs 2.27x predicted from the sample   [sample adequate]
+       worst: lambda = +0.2554-0.4113j  |lambda| = 0.4842, arg = -0.323pi, |mu| = 0.7501 > 0.5705
+
+========================================================================
+Spectral diagnosis: wiki-Vote
+========================================================================
+  GoogleMatrix('wiki-Vote', n=7115, nnz=103689, d=0.85, dangling=1005)
+    d=0.85:
+       paper's beta = d^2/4 = 0.180625  ->  true rate 0.7060  
+       largest stable beta   = 0.239560
+       best beta             = 0.052526  ->  rate 0.3735 vs power 0.8500   (6.06x achievable, 3.60x predicted by real-spectrum theory)
+       worst-case-safe beta  = 0.069375  (bound over |lambda| <= d)
+       sampled modes overtaking the dominant one: 0 of 179
+       EMPIRICAL CHECK at beta_best: power 32 mv vs static 25 mv  ->  1.28x measured vs 6.06x predicted from the sample   [SAMPLE INCOMPLETE: prediction optimistic]
+    d=0.95:
+       paper's beta = d^2/4 = 0.225625  ->  true rate 0.9181  
+       largest stable beta   = 0.236997
+       best beta             = 0.065533  ->  rate 0.4241 vs power 0.9500   (16.73x achievable, 6.30x predicted by real-spectrum theory)
+       worst-case-safe beta  = 0.024375  (bound over |lambda| <= d)
+       sampled modes overtaking the dominant one: 0 of 179
+       EMPIRICAL CHECK at beta_best: power 38 mv vs static 28 mv  ->  1.36x measured vs 16.73x predicted from the sample   [SAMPLE INCOMPLETE: prediction optimistic]
+    d=0.99:
+       paper's beta = d^2/4 = 0.245025  ->  true rate 1.1003  (DIVERGES)
+       largest stable beta   = 0.235871
+       best beta             = 0.071161  ->  rate 0.4451 vs power 0.9900   (80.54x achievable, 14.13x predicted by real-spectrum theory)
+       worst-case-safe beta  = 0.004975  (bound over |lambda| <= d)
+       sampled modes overtaking the dominant one: 126 of 179
+       EMPIRICAL CHECK at beta_best: power 41 mv vs static 29 mv  ->  1.41x measured vs 80.54x predicted from the sample   [SAMPLE INCOMPLETE: prediction optimistic]
+       worst: lambda = -0.0036+0.2374j  |lambda| = 0.2374, arg = +0.505pi, |mu| = 0.6277 > 0.5705
+  wrote figures/exp5_rate_vs_beta.pdf
+  wrote figures/exp5_spectrum_plane.pdf
+
+wrote results/exp5_spectrum.csv
+
+========================================================================
+SUMMARY: achievable vs predicted acceleration
+========================================================================
+    graph        d  rate_at_beta_paper  diverges  beta_best  achievable_speedup  measured_speedup_at_beta_best  predicted_speedup
+cit-HepPh   0.8500              0.8436     False     0.1472              1.8470                         1.2564             3.6038
+cit-HepPh   0.9500              1.0970      True     0.1838              2.1137                         1.4663             6.2978
+cit-HepPh   0.9900              1.3147      True     0.1996              2.2737                         1.6142            14.1303
+wiki-Vote   0.8500              0.7060     False     0.0525              6.0594                         1.2800             3.6038
+wiki-Vote   0.9500              0.9181     False     0.0655             16.7251                         1.3571             6.2978
+wiki-Vote   0.9900              1.1003      True     0.0712             80.5391                         1.4138            14.1303
+
+################ experiments/exp6_symmetric.py ################
+
+========================================================================
+Symmetric control problems (Theorem 3.1 applies here)
+========================================================================
+  ca-HepPh eigenvector centrality: n=12,008, nnz=237,010, symmetric=True
+    lambda_1=244.939, lambda_2=91.8782, r=0.3751  ->  rho=0.1947, theory predicts 1.67x
+       power:     35 mv   1.00x  res 5.11e-13  conv=True
+      static:     23 mv   1.52x  res 7.78e-13  conv=True
+     dynamic:     23 mv   1.52x  res 2.02e-13  conv=True
+  cit-HepPh co-citation $AA^T$: n=34,546, nnz=6,324,870, symmetric=True
+    lambda_1=3257.73, lambda_2=2813.95, r=0.8638  ->  rho=0.5744, theory predicts 3.79x
+       power:    236 mv   1.00x  res 9.74e-13  conv=True
+      static:     72 mv   3.28x  res 9.06e-13  conv=True
+     dynamic:     66 mv   3.58x  res 9.23e-13  conv=True
+  wrote figures/exp6_symmetric_control.pdf
+
+wrote results/exp6_symmetric.csv
+
+========================================================================
+CONTROL RESULT: measured vs predicted on symmetric problems
+========================================================================
+                        problem        r  method  matvecs  speedup  predicted_speedup
+ca-HepPh eigenvector centrality    0.375   power       35    1.000              1.669
+ca-HepPh eigenvector centrality    0.375  static       23    1.522              1.669
+ca-HepPh eigenvector centrality    0.375 dynamic       23    1.522              1.669
+   cit-HepPh co-citation $AA^T$    0.864   power      236    1.000              3.786
+   cit-HepPh co-citation $AA^T$    0.864  static       72    3.278              3.786
+   cit-HepPh co-citation $AA^T$    0.864 dynamic       66    3.576              3.786
+
+  Control: momentum delivers the predicted acceleration on symmetric problems: PASS
+
+ALL EXPERIMENTS COMPLETE
