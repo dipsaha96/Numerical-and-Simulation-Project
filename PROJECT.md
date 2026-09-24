@@ -63,7 +63,7 @@ happens.
 | **3** | **Algorithm 3.1 as printed diverges on every real graph tested.** The residual oscillates; one step with `d_{k+1} > d_k` pins `ρ_k = 1`, hence `r_{k+1} = 1` and `β_k → λ₁²/4 = ¼` — precisely the value at which §2 of the paper proves convergence stops. |
 | **4** | **The root cause is non-normality.** For real `λ`, every mode with `λ²/4 < β` maps to `\|μ\| = √β` exactly — that identity is what makes `β = λ₂²/4` optimal. For `λ = iy` it becomes `(\|y\| + √(y²+4β))/2`, unbounded in `\|y\|`. So the destabilising modes are **small-modulus eigenvalues near the imaginary axis**, which a largest-magnitude eigensolver never returns. |
 | **5** | **A symmetric control isolates the cause.** On the *same* `cit-HepPh` data symmetrised as the co-citation matrix `AAᵀ`, the dynamic method delivers **3.58×** against 3.79× predicted. Only normality changed. |
-| **5b** | **A single-variable sweep proves it.** Holding `λ₁ = 1` and `\|λ₂\| = 0.9` fixed and rotating *only* the argument of the subdominant eigenvalues: the power iteration varies 8–13% across the whole sweep while momentum flips from 3.14× to divergence after a **9° rotation**. Theory predicts the onset for the static optimal parameter in **3/3** cases exactly. |
+| **5b** | **A single-variable sweep proves it.** Holding `λ₁ = 1` and `\|λ₂\| = 0.9` fixed and rotating *only* the argument of the subdominant eigenvalues: the power iteration varies 8–13% across the whole sweep while momentum flips from 3.14× to divergence after as little as a **3.6° rotation**. Theory predicts the onset for the static optimal parameter in **3/3** cases exactly. |
 | **6** | **Our safeguarded variant restores robustness**, using only information PageRank supplies for free (`λ₁ = 1`, `r ≤ d`) plus residual-triggered backtracking. It converges on every graph and damping factor tested, reaching **4.08×** on `cit-HepPh` at `d = 0.99` where the published algorithm diverges. |
 | **7** | **For ranking, none of it matters much.** The top-100 ordering is already correct after **7–16** matvecs, while driving the eigen-residual to `10⁻¹²` takes up to **2005**. Ranking converges **15–286×** sooner than the residual, so the acceleration is spent on digits nobody reads. |
 
@@ -456,7 +456,8 @@ control**: it should be equally hard throughout.
 *(`r = 0.9`, predicted 4.43× on every row; `!` = did not converge)*
 
 **The power iteration moves by 8–13% across the entire sweep** while momentum
-flips from 3.14× to divergence after a **9° rotation**. One variable in, one
+flips from 3.14× to divergence after as little as a **3.6° rotation** — the
+smallest angle we sample. One variable in, one
 outcome out.
 
 **The sweep also separates the two failure modes of §6**, which the PageRank
