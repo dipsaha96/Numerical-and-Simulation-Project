@@ -126,6 +126,20 @@ The symmetric control (`exp6`) is the contrast that makes the cause clear:
 
 Same citation data, symmetrised: the acceleration appears.
 
+And the controlled sweep (`exp7`) isolates the cause to a single variable —
+`λ₁ = 1` and `|λ₂| = 0.9` pinned, only the *argument* of the subdominant
+eigenvalues rotated:
+
+| arg(λ) | power | **dynamic** | |
+|---|---|---|---|
+| 0 (real) | 245 | **78 (3.14×)** | |
+| 9° off the axis | 251 | diverged | |
+| 90° (imaginary) | 270 | diverged | |
+
+The power iteration moves 8–13% across the whole sweep; momentum flips from
+3.14× to divergence after a 9° rotation. Theory predicts the onset for the
+*static* optimal parameter in **3/3** cases exactly.
+
 ## Repository layout
 
 ```
@@ -144,6 +158,7 @@ experiments/
   exp4_ranking.py      Phase 5: residual convergence vs ranking convergence
   exp5_spectrum.py     Phase 6: why beta = d^2/4 fails, with empirical check
   exp6_symmetric.py    Phase 7: symmetric control
+  exp7_normality.py    Phase 8: single-variable sweep isolating non-normality
 tests/                 19 unit tests, including regressions for both safeguard bugs
 results/               CSV output
 figures/               PDF (for LaTeX) and PNG (for slides)

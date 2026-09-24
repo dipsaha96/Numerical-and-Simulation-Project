@@ -8,7 +8,7 @@
 
 PY := ./.venv/bin/python
 
-.PHONY: setup test all quick clean phase1 phase2 phase3 phase4 phase5 phase6 distclean
+.PHONY: setup test all quick clean phase1 phase2 phase3 phase4 phase5 phase6 phase7 distclean
 
 setup:
 	python3 -m venv .venv
@@ -37,7 +37,10 @@ phase5:
 phase6:
 	$(PY) experiments/exp6_symmetric.py
 
-all: test phase1 phase2 phase3 phase4 phase5 phase6
+phase7:
+	$(PY) experiments/exp7_normality.py
+
+all: test phase1 phase2 phase3 phase4 phase5 phase6 phase7
 	@echo
 	@echo "All experiments complete. See results/ and figures/."
 
@@ -46,6 +49,7 @@ quick:
 	$(PY) experiments/exp2_pagerank.py --offline --graphs synthetic
 	$(PY) experiments/exp3_damping.py --offline --graphs synthetic
 	$(PY) experiments/exp6_symmetric.py --offline
+	$(PY) experiments/exp7_normality.py
 
 clean:
 	rm -f results/*.csv figures/*.pdf figures/*.png

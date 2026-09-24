@@ -14,7 +14,7 @@ A methodological extension and cross-domain application of
 | **Group members** | Nakib Arman (2105128) · Ali Asif Khan (2105131) · Shariar Al Kabir (2105132) · Dip Saha (2105138) · MD. Mehedi Hasan Mim (2105142) |
 | **Presenter** | Dip Saha |
 | **Language / stack** | Python 3.13, NumPy, SciPy, NetworkX (validation only), Matplotlib, pandas |
-| **Code** | ~3,200 lines across 7 library modules, 6 experiment drivers, 19 unit tests |
+| **Code** | ~3,600 lines across 7 library modules, 7 experiment drivers, 19 unit tests |
 | **Reproduce everything** | `make setup && make all` |
 
 ---
@@ -63,6 +63,7 @@ happens.
 | **3** | **Algorithm 3.1 as printed diverges on every real graph tested.** The residual oscillates; one step with `d_{k+1} > d_k` pins `ρ_k = 1`, hence `r_{k+1} = 1` and `β_k → λ₁²/4 = ¼` — precisely the value at which §2 of the paper proves convergence stops. |
 | **4** | **The root cause is non-normality.** For real `λ`, every mode with `λ²/4 < β` maps to `\|μ\| = √β` exactly — that identity is what makes `β = λ₂²/4` optimal. For `λ = iy` it becomes `(\|y\| + √(y²+4β))/2`, unbounded in `\|y\|`. So the destabilising modes are **small-modulus eigenvalues near the imaginary axis**, which a largest-magnitude eigensolver never returns. |
 | **5** | **A symmetric control isolates the cause.** On the *same* `cit-HepPh` data symmetrised as the co-citation matrix `AAᵀ`, the dynamic method delivers **3.58×** against 3.79× predicted. Only normality changed. |
+| **5b** | **A single-variable sweep proves it.** Holding `λ₁ = 1` and `\|λ₂\| = 0.9` fixed and rotating *only* the argument of the subdominant eigenvalues: the power iteration varies 8–13% across the whole sweep while momentum flips from 3.14× to divergence after a **9° rotation**. Theory predicts the onset for the static optimal parameter in **3/3** cases exactly. |
 | **6** | **Our safeguarded variant restores robustness**, using only information PageRank supplies for free (`λ₁ = 1`, `r ≤ d`) plus residual-triggered backtracking. It converges on every graph and damping factor tested, reaching **4.08×** on `cit-HepPh` at `d = 0.99` where the published algorithm diverges. |
 | **7** | **For ranking, none of it matters much.** The top-100 ordering is already correct after **7–16** matvecs, while driving the eigen-residual to `10⁻¹²` takes up to **2005**. Ranking converges **15–286×** sooner than the residual, so the acceleration is spent on digits nobody reads. |
 
@@ -427,6 +428,62 @@ The second row is the decisive one: **the same citation data**, symmetrised,
 and the acceleration appears at 94% of the predicted value. The only thing that
 changed is normality.
 
+### 5.7 Phase 8 — isolating non-normality as the single cause
+
+The control in §5.6 has a gap a sharp reader will find: relative to the PageRank
+case it changes **three** things at once — the symmetry, the matrix itself, and
+`r`. Observing a different outcome does not establish *which* one is
+responsible.
+
+This experiment closes the gap. It builds a family of matrices with `λ₁ = 1`
+and `|λ₂| = r` **fixed** — so the predicted speedup is identical for every
+member — and varies only the **argument** of the subdominant eigenvalues, from
+`0` (real spectrum, symmetric matrix) to `π/2` (purely imaginary). Each matrix
+is block diagonal with `[1]` in the corner and 2×2 rotation-scaling blocks whose
+eigenvalues are `m·e^{±iθ}`.
+
+Because `|λ₂|` never changes, the **plain power iteration is an internal
+control**: it should be equally hard throughout.
+
+| arg(λ)/π | symmetric? | power | static `β=r²/4` | Alg. 3.1 | + safeguards | speedup |
+|---|---|---|---|---|---|---|
+| 0.00 | yes | 245 | 64 | **78** | 68 | **3.14×** |
+| 0.02 | no | 247 | 120 | 1022 ! | 121 | **diverged** |
+| 0.05 | no | 251 | 322 | 1017 ! | 317 | diverged |
+| 0.10 | no | 256 | 1010 ! | 1011 ! | 406 | diverged |
+| 0.50 | no | 270 | 1002 ! | 1003 ! | 592 | diverged |
+
+*(`r = 0.9`, predicted 4.43× on every row; `!` = did not converge)*
+
+**The power iteration moves by 8–13% across the entire sweep** while momentum
+flips from 3.14× to divergence after a **9° rotation**. One variable in, one
+outcome out.
+
+**The sweep also separates the two failure modes of §6**, which the PageRank
+experiments could only observe tangled together:
+
+| | mechanism | onset |
+|---|---|---|
+| **Mode B** | the spectral crossing — `max\|μ(λ_l)\|` overtakes `\|μ(λ₁)\|` | kills the *statically optimal* `β = r²/4` |
+| **Mode A** | the `ρ_k → 1` runaway | kills **Algorithm 3.1 earlier**, at the first hint of oscillation |
+
+Mode B is predicted **exactly**:
+
+| r | crossing after | theory predicts divergence at | measured | |
+|---|---|---|---|---|
+| 0.85 | 0.10π | 0.15π | 0.15π | ✅ |
+| 0.90 | 0.05π | 0.10π | 0.10π | ✅ |
+| 0.95 | 0.02π | 0.05π | 0.05π | ✅ |
+
+**3/3 exact agreement** between the predicted crossing and the measured onset —
+a quantitative validation of §6, not merely a qualitative one. Algorithm 3.1
+fails *before* the crossing because it infers `r` from residual ratios: one step
+with `d_{k+1} > d_k` sets `ρ_k = 1`, hence `r = 1` and `β → ¼`. **Its
+self-tuning rule steers it into the barrier that the fixed parameter still
+avoids.**
+
+The safeguarded variant converged on **27/27** of the same matrices.
+
 ---
 
 ## 6. Why it fails: the spectral analysis
@@ -699,6 +756,26 @@ If §5.3 showed no speedup *and* this showed no speedup, the honest conclusion
 would be "our code is broken". It shows 3.58× against 3.79× predicted on the
 same citation data, so the conclusion is "the Google matrix is the problem".
 
+### 8.4b Level 3b — the single-variable sweep (~20 s, no downloads)
+
+```bash
+make phase7
+```
+
+Where §8.4 shows momentum works on *some* symmetric problem, this shows it stops
+working the moment — and only the moment — the spectrum leaves the real axis,
+with every other quantity pinned. Expected tail:
+
+```
+    -> 3/3 exact agreement between the predicted
+       crossing and the measured onset.
+  Safeguarded variant converged on 27/27 of the same matrices.
+  One variable changed; one outcome flipped.  Non-normality is the cause.
+```
+
+This is the strongest single piece of evidence in the project and the cheapest
+to re-run: pure synthetic matrices, no network, about 20 seconds.
+
 ### 8.5 Full pipeline
 
 ```bash
@@ -717,6 +794,7 @@ or equivalently `./run_all.sh`, which additionally tees clean output to
 | 5 | `exp4_ranking.py` | 60 s | `exp4_ranking_quality` |
 | 6 | `exp5_spectrum.py` | 90 s | `exp5_rate_vs_beta`, `exp5_spectrum_plane` |
 | 7 | `exp6_symmetric.py` | 15 s | `exp6_symmetric_control` |
+| 8 | `exp7_normality.py` | 20 s | `exp7_normality` |
 
 First run adds ~90 MB of downloads. Every script accepts `--graphs`,
 `--dampings` and `--offline`.
@@ -825,6 +903,7 @@ print(first, "vs", run.matvecs)      # 7 vs 2005
 | `exp5_rate_vs_beta` | `exp5` | True rate vs `β`, with `d²/4` marked past the stability boundary. |
 | `exp5_spectrum_plane` | `exp5` | **The key figure.** Spectrum in ℂ coloured by `\|μ(λ)\|`; diverging modes circled. |
 | `exp6_symmetric_control` | `exp6` | The control: acceleration appears on symmetric problems. |
+| `exp7_normality` | `exp7` | **The single-variable proof.** A: speedup vs `arg λ` with `r` pinned. B: the two failure modes. C: theory predicting mode B's onset exactly. |
 
 All figures are written as **both PDF** (for LaTeX) **and PNG** (for slides).
 Every table in §5 comes from the corresponding `results/*.csv`.
@@ -838,7 +917,9 @@ Stated plainly, since the conclusion is negative.
 1. **Spectral sampling is incomplete** (§6.5). Sampled rates are lower bounds,
    so divergence claims are sound but "achievable speedup" figures are
    optimistic. `exp5` measures its own predictions and flags the gap.
-2. **Three graphs, one graph family each.** `cit-HepPh` (citation),
+2. **Three graphs, one graph family each.** Partly mitigated by §5.7, which
+   establishes the mechanism on a controlled synthetic family rather than
+   relying on the graph sample. `cit-HepPh` (citation),
    `web-Stanford` (web), `wiki-Vote` (social). `web-Google` (876k) and
    `web-BerkStan` are supported but untested here.
 3. **The safeguard parameters were tuned on these graphs.** `W = 8`,
@@ -908,7 +989,7 @@ experiment drivers could be written before the solvers were finished.
 | `src/metrics.py` | 115 | ℓ1/ℓ∞ error, precision@k, Kendall tau, Spearman |
 | `src/pagerank_methods.py` | 76 | The five configurations, defined once |
 | `src/plotting.py` | 66 | Shared style, Okabe–Ito colour-blind-safe palette |
-| `experiments/*.py` | 1,355 | Six drivers + shared helpers |
+| `experiments/*.py` | 1,600 | Seven drivers + shared helpers |
 | `tests/*.py` | 247 | 19 unit tests |
 
 ### 13.2 Result files
@@ -922,6 +1003,7 @@ experiment drivers could be written before the solvers were finished.
 | `exp4_ranking_curves.csv` | (d, method, step) | per-iterate `residual`, `l1_error`, `precision_at_k`, `kendall` |
 | `exp5_spectrum.csv` | (graph, d) | `rate_at_beta_paper`, `diverges`, `beta_best`, `measured_speedup_at_beta_best`, `n_modes_overtaking` |
 | `exp6_symmetric.csv` | (problem, method) | `matvecs`, `speedup`, `predicted_speedup` |
+| `exp7_normality.csv` | (r, theta, method) | `matvecs`, `speedup`, `symmetric`, `mu_subdominant`, `mu_dominant`, `theory_diverges` |
 | `run.log` | — | Full console transcript of the last `./run_all.sh` |
 
 ### 13.3 Datasets

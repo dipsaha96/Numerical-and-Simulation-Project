@@ -20,5 +20,6 @@ run experiments/exp3_damping.py --graphs cit-HepPh web-Stanford wiki-Vote
 run experiments/exp4_ranking.py --graph cit-HepPh --dampings 0.85 0.99
 run experiments/exp5_spectrum.py --graphs cit-HepPh wiki-Vote
 run experiments/exp6_symmetric.py
+run experiments/exp7_normality.py
 echo "" | tee -a "$LOG"
 echo "ALL EXPERIMENTS COMPLETE" | tee -a "$LOG"
