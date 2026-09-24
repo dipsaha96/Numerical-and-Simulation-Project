@@ -137,7 +137,7 @@ eigenvalues rotated:
 | 90° (imaginary) | 270 | diverged | |
 
 The power iteration moves 8–13% across the whole sweep; momentum flips from
-3.14× to divergence after as little as a 3.6° rotation. Theory predicts the onset for the
+3.14× to divergence after a 9° rotation. Theory predicts the onset for the
 *static* optimal parameter in **3/3** cases exactly.
 
 ## Repository layout
@@ -167,14 +167,6 @@ figures/               PDF (for LaTeX) and PNG (for slides)
 `src/iterations.py` never imports anything about PageRank; it takes a linear
 operator. That is what lets the SuiteSparse reproduction and the Google-matrix
 study share one code path, and what makes the symmetric control free.
-
-## Documentation
-
-| File | For whom |
-|---|---|
-| **`PROJECT_GUIDE.pdf`** | **Start here.** A 24-page walkthrough that assumes nothing: what PageRank is, what momentum does, every symbol, every dataset, every file, and all 13 figures explained. Rebuild with `make guide`. |
-| `PROJECT.md` | The formal report — theory, results, and the full testing procedure. |
-| `README.md` | This file: headline numbers and the two implementation traps. |
 
 ## Running it
 
