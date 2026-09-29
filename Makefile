@@ -1,14 +1,15 @@
-# CSE 402 -- Accelerating PageRank with Dynamic Momentum Power Iteration
+# CSE 402 - Accelerating PageRank with Dynamic Momentum Power Iteration
 #
 #   make setup   create .venv and install pinned dependencies
 #   make test    run the unit tests
-#   make all     run every experiment, regenerating results/ and figures/
-#   make quick   the offline/synthetic subset, no downloads needed
+#   make all     run every experiment  -> result/ and figure/
+#   make quick   the fast subset: no SuiteSparse downloads, no web-Stanford
 #   make clean   remove generated results and figures (keeps downloaded data)
 
 PY := ./.venv/bin/python
 
-.PHONY: setup test all quick clean phase1 phase2 phase3 phase4 phase5 phase6 phase7 distclean
+.PHONY: setup test all quick clean distclean \
+        exp1 exp2 exp3 exp4 exp5 exp6 exp7 exp8
 
 setup:
 	python3 -m venv .venv
@@ -18,41 +19,32 @@ setup:
 test:
 	$(PY) -m pytest tests/ -q
 
-# Gates run first: a failure here invalidates everything downstream.
-phase1:
-	$(PY) experiments/exp1_reproduce.py
-
-phase2:
-	$(PY) experiments/exp2_pagerank.py
-
-phase3:
-	$(PY) experiments/exp3_damping.py
-
-phase4:
-	$(PY) experiments/exp4_ranking.py
-
-phase5:
-	$(PY) experiments/exp5_spectrum.py
-
-phase6:
-	$(PY) experiments/exp6_symmetric.py
-
-phase7:
-	$(PY) experiments/exp7_normality.py
-
-all: test phase1 phase2 phase3 phase4 phase5 phase6 phase7
-	@echo
-	@echo "All experiments complete. See results/ and figures/."
+all:
+	./run_all.sh
 
 quick:
-	$(PY) experiments/exp1_reproduce.py --quick
-	$(PY) experiments/exp2_pagerank.py --offline --graphs synthetic
-	$(PY) experiments/exp3_damping.py --offline --graphs synthetic
-	$(PY) experiments/exp6_symmetric.py --offline
-	$(PY) experiments/exp7_normality.py
+	./run_all.sh --quick
+
+# ---- individual experiments ------------------------------------------------
+exp1:
+	$(PY) experiment/exp1_reproduce.py
+exp2:
+	$(PY) experiment/exp2_pagerank.py
+exp3:
+	$(PY) experiment/exp3_damping.py
+exp4:
+	$(PY) experiment/exp4_ranking.py
+exp5:
+	$(PY) experiment/exp5_spectrum.py
+exp6:
+	$(PY) experiment/exp6_robustness.py
+exp7:
+	$(PY) experiment/exp7_generality.py
+exp8:
+	$(PY) experiment/exp8_limitations.py
 
 clean:
-	rm -f results/*.csv figures/*.pdf figures/*.png
+	rm -f result/*.csv result/*.log figure/*.pdf figure/*.png
 
 distclean: clean
 	rm -rf data/*.gz data/*.tar.gz data/*/ .venv

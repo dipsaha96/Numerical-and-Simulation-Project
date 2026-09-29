@@ -89,8 +89,30 @@ SNAP_DATASETS: dict[str, SnapDataset] = {
     "ca-HepPh": SnapDataset(
         "ca-HepPh", "https://snap.stanford.edu/data/ca-HepPh.txt.gz",
         12_008, 118_521, "collaboration", False,
-        "Undirected co-authorship graph; the symmetric control problem, where "
-        "the paper's acceleration theorems actually apply.",
+        "Undirected co-authorship graph (arXiv hep-ph).  Its Google matrix has a "
+        "real spectrum, which is the condition the paper's theory assumes.",
+    ),
+    # Further undirected co-authorship graphs, used to check that the result is
+    # a property of undirected graphs rather than of one particular dataset.
+    "ca-GrQc": SnapDataset(
+        "ca-GrQc", "https://snap.stanford.edu/data/ca-GrQc.txt.gz",
+        5_242, 14_496, "collaboration", False,
+        "arXiv general relativity co-authorship; the smallest of the family.",
+    ),
+    "ca-HepTh": SnapDataset(
+        "ca-HepTh", "https://snap.stanford.edu/data/ca-HepTh.txt.gz",
+        9_877, 25_998, "collaboration", False,
+        "arXiv hep-th co-authorship; much sparser than ca-HepPh.",
+    ),
+    "ca-AstroPh": SnapDataset(
+        "ca-AstroPh", "https://snap.stanford.edu/data/ca-AstroPh.txt.gz",
+        18_772, 198_110, "collaboration", False,
+        "arXiv astrophysics co-authorship; the densest of the family.",
+    ),
+    "ca-CondMat": SnapDataset(
+        "ca-CondMat", "https://snap.stanford.edu/data/ca-CondMat.txt.gz",
+        23_133, 93_497, "collaboration", False,
+        "arXiv condensed-matter co-authorship; the largest of the family.",
     ),
 }
 

@@ -1,0 +1,421 @@
+unit tests
+...................                                                      [100%]
+19 passed in 0.61s
+
+################  experiment/exp1_reproduce.py  ################
+  wrote figure/exp1_theory_rate.pdf and .png
+
+==========================================================================
+Matrix 1:  A = diag(1000 : -1 : 1)      (the paper's benchmark, r = 0.999)
+==========================================================================
+  diag(1000:-1:1):  r = 0.9990   (theory predicts 44.72x, rate 0.9990 -> 0.9562)
+        power:  2001 matvecs  residual 1.38e-01  converged=False
+       static:   777 matvecs  residual 9.95e-13  converged=True
+      dynamic:   683 matvecs  residual 9.78e-13  converged=True
+     power (uncapped): 27619 matvecs
+     -> measured speed-up: static 35.55x, dynamic 40.44x (theory 44.72x)
+  wrote figure/exp1_matrix1.pdf and .png
+
+==========================================================================
+The paper's SuiteSparse benchmark matrices
+==========================================================================
+  (paper reports r = 0.9981)
+  Kuu:  r = 0.9981   (theory predicts 32.82x, rate 0.9981 -> 0.9408)
+        power:  2001 matvecs  residual 2.46e-03  converged=False
+       static:  1166 matvecs  residual 9.61e-13  converged=True
+      dynamic:   528 matvecs  residual 9.76e-13  converged=True
+  (paper reports r = 0.9992)
+  Muu:  r = 0.9992   (theory predicts 48.74x, rate 0.9992 -> 0.9598)
+        power:  2001 matvecs  residual 6.39e-08  converged=False
+       static:   728 matvecs  residual 8.85e-13  converged=True
+      dynamic:   292 matvecs  residual 9.46e-13  converged=True
+  (paper reports r = 0.9153)
+  ash292:  r = 0.9153   (theory predicts 4.82x, rate 0.9153 -> 0.6525)
+        power:   313 matvecs  residual 9.27e-13  converged=True
+       static:    75 matvecs  residual 7.49e-13  converged=True
+      dynamic:    73 matvecs  residual 8.00e-13  converged=True
+  (paper reports r = 0.9814)
+  bcspwr06:  r = 0.9814   (theory predicts 10.34x, rate 0.9814 -> 0.8232)
+        power:  1360 matvecs  residual 9.99e-13  converged=True
+       static:   154 matvecs  residual 8.39e-13  converged=True
+      dynamic:   145 matvecs  residual 9.22e-13  converged=True
+  wrote figure/exp1_suitesparse.pdf and .png
+
+wrote result/exp1_reproduce.csv
+
+==========================================================================
+GATE: is our implementation faithful to the paper?
+==========================================================================
+  [PASS] dynamic momentum converges on Matrix 1
+  [PASS] dynamic beats power by >5x (40.4x measured)
+  [PASS] measured speed-up within 25% of the predicted 44.7x
+  [PASS] dynamic is at least as fast as the optimal static method
+  [PASS] beta_k settles at lambda_2^2/4 without being told it
+  [PASS] measured r for Kuu matches the paper (0.9981)
+  [PASS] measured r for Muu matches the paper (0.9992)
+  [PASS] measured r for ash292 matches the paper (0.9153)
+  [PASS] measured r for bcspwr06 matches the paper (0.9814)
+
+  Gate: PASS -- the implementation is faithful
+
+################  experiment/exp2_pagerank.py  ################
+
+==========================================================================
+ca-HepPh: building and validating the Google matrix  (d = 0.85)
+==========================================================================
+  GoogleMatrix('ca-HepPh', n=12008, nnz=236978, d=0.85, dangling=2)
+  undirected: the link structure is symmetric, 2 dangling node(s) of 12,008
+  [PASS] matches networkx.pagerank (l1 error 1.29e-09, tolerance 2.4e-08)
+           fixed-point residual ||Gx-x||_1 = 1.00e-15
+  measured |lambda_2(G)| = 0.850000   (d = 0.85, ratio 1.0000)
+  -> lambda_1 = 1 and |lambda_2| = d, so the optimal static parameter is
+     beta = d^2/4 = 0.180625, known in closed form with no eigensolve.
+  theory predicts 3.60x (rate 0.850 -> 0.5567)
+
+==========================================================================
+ca-HepPh: the three published methods at d = 0.85
+==========================================================================
+     power:   150 matvecs     26.1 ms  residual 9.60e-13  speed-up  1.00x  agreement l1=0.0e+00  top100=1.000
+    static:    49 matvecs      8.5 ms  residual 7.26e-13  speed-up  3.06x  agreement l1=3.4e-13  top100=1.000
+   dynamic:    47 matvecs      8.9 ms  residual 8.32e-13  speed-up  3.19x  agreement l1=1.1e-12  top100=1.000
+
+wrote result/exp2_pagerank.csv
+  wrote figure/exp2_pagerank.pdf and .png
+
+==========================================================================
+GATE
+==========================================================================
+  [PASS] Google matrix validated
+  [PASS] Algorithm 3.1 converged, unmodified
+  [PASS] dynamic momentum beats plain power iteration (3.19x)
+
+################  experiment/exp3_damping.py  ################
+
+==========================================================================
+Theoretical prediction  (r = d for the Google matrix)
+==========================================================================
+        d    rho(d)   predicted speed-up
+     0.85    0.5567                3.60x
+      0.9    0.6268                4.43x
+     0.95    0.7239                6.30x
+     0.99    0.8676               14.13x
+    0.999    0.9562               44.72x
+
+==========================================================================
+Measured on ca-HepPh  (12,008 nodes, 236,978 links)
+==========================================================================
+        d    power   static  dynamic |   static  dynamic |   theory
+  --------------------------------------------------------------------
+     0.85      150       49       47 |    3.06x    3.19x |    3.60x
+      0.9      231       61       58 |    3.79x    3.98x |    4.43x
+     0.95      471       88       83 |    5.35x    5.67x |    6.30x
+     0.99     2377      197      182 |   12.07x   13.06x |   14.13x
+    0.999    23777      622      567 |   38.23x   41.93x |   44.72x
+
+wrote result/exp3_damping.csv
+  wrote figure/exp3_damping.pdf and .png
+
+==========================================================================
+MEASURED vs PREDICTED
+==========================================================================
+method  dynamic   static   theory  dynamic % of theory
+d                                                     
+0.850      3.19     3.06     3.60                88.56
+0.900      3.98     3.79     4.43                89.83
+0.950      5.67     5.35     6.30                90.11
+0.990     13.06    12.07    14.13                92.43
+0.999     41.93    38.23    44.72                93.78
+
+  Observed asymptotic rates against the predicted rho(d):
+    d=0.85  : measured 0.5563   predicted 0.5567
+    d=0.9   : measured 0.6273   predicted 0.6268
+    d=0.95  : measured 0.7241   predicted 0.7239
+    d=0.99  : measured 0.8676   predicted 0.8676
+    d=0.999 : measured 0.9562   predicted 0.9562
+
+################  experiment/exp4_ranking.py  ################
+
+==========================================================================
+ca-HepPh, d = 0.85: residual convergence vs ranking convergence
+==========================================================================
+     power: residual 1e-12 at    150 mv | precision@100=1.0 at    17 mv | tau>0.99 at    22 mv | ranking ready   8.8x sooner
+    static: residual 1e-12 at     49 mv | precision@100=1.0 at     8 mv | tau>0.99 at    10 mv | ranking ready   6.1x sooner
+   dynamic: residual 1e-12 at     47 mv | precision@100=1.0 at     9 mv | tau>0.99 at     9 mv | ranking ready   5.2x sooner
+
+==========================================================================
+ca-HepPh, d = 0.99: residual convergence vs ranking convergence
+==========================================================================
+     power: residual 1e-12 at   2377 mv | precision@100=1.0 at    50 mv | tau>0.99 at    49 mv | ranking ready  47.5x sooner
+    static: residual 1e-12 at    197 mv | precision@100=1.0 at    24 mv | tau>0.99 at    24 mv | ranking ready   8.2x sooner
+   dynamic: residual 1e-12 at    182 mv | precision@100=1.0 at    10 mv | tau>0.99 at    19 mv | ranking ready  18.2x sooner
+
+wrote result/exp4_ranking.csv and result/exp4_ranking_curves.csv
+  wrote figure/exp4_ranking.pdf and .png
+
+==========================================================================
+RESIDUAL CONVERGENCE vs RANKING CONVERGENCE
+==========================================================================
+   graph    d  method   k  matvecs_residual  matvecs_precision  matvecs_kendall  ranking_speedup  converged
+ca-HepPh 0.85   power 100               150                 17               22         8.823529       True
+ca-HepPh 0.85  static 100                49                  8               10         6.125000       True
+ca-HepPh 0.85 dynamic 100                47                  9                9         5.222222       True
+ca-HepPh 0.99   power 100              2377                 50               49        47.540000       True
+ca-HepPh 0.99  static 100               197                 24               24         8.208333       True
+ca-HepPh 0.99 dynamic 100               182                 10               19        18.200000       True
+
+################  experiment/exp5_spectrum.py  ################
+
+==========================================================================
+Is the spectrum of ca-HepPh's Google matrix real?
+==========================================================================
+  d=0.85:  49 eigenvalues sampled, max |Im lambda| = 1.27e-17
+          beta = d^2/4 = 0.180625;  sqrt(beta) = 0.4250
+          strongest rival |mu| = 0.4250  vs  |mu(lambda_1)| = 0.7634   -> rate 0.5567, predicted 0.5567
+  d=0.95:  49 eigenvalues sampled, max |Im lambda| = 4.26e-18
+          beta = d^2/4 = 0.225625;  sqrt(beta) = 0.4750
+          strongest rival |mu| = 0.4750  vs  |mu(lambda_1)| = 0.6561   -> rate 0.7239, predicted 0.7239
+  d=0.99:  49 eigenvalues sampled, max |Im lambda| = 5.17e-16
+          beta = d^2/4 = 0.245025;  sqrt(beta) = 0.4950
+          strongest rival |mu| = 0.4950  vs  |mu(lambda_1)| = 0.5705   -> rate 0.8676, predicted 0.8676
+
+wrote result/exp5_spectrum.csv
+  wrote figure/exp5_spectrum.pdf and .png
+
+==========================================================================
+SUMMARY: the theory's assumption holds, so its prediction holds
+==========================================================================
+         d  max_abs_imag  sqrt_beta  mu_subdominant  mu_dominant  rate_from_spectrum  rate_predicted
+  0.850000      0.000000   0.425000        0.425000     0.763391            0.556726        0.556726
+  0.950000      0.000000   0.475000        0.475000     0.656125            0.723948        0.723947
+  0.990000      0.000000   0.495000        0.495001     0.570534            0.867610        0.867609
+
+  The spectrum is real to ~1e-15, so every rival folds to exactly sqrt(beta)
+  and the rate computed from the spectrum equals the paper's rho(d).
+
+################  experiment/exp6_robustness.py  ################
+
+==========================================================================
+Part A - three families of starting vector, 50 runs each
+==========================================================================
+  d = 0.85   (theory predicts 3.60x)
+                    start   method     min     max      mean     std  speed-up
+                     ones    power     150     150     150.0     0.0     1.00x
+                            static      49      49      49.0     0.0     3.06x
+                           dynamic      47      47      47.0     0.0     3.19x
+      random non-negative    power     157     158     157.2     0.4     1.00x
+                            static      51      51      51.0     0.0     3.08x
+                           dynamic      48      48      48.0     0.0     3.28x
+            random signed    power     183     217     194.5     7.5     1.00x
+                            static      58      68      61.4     2.2     3.17x
+                           dynamic      61      95      72.3     7.3     2.69x
+
+  d = 0.95   (theory predicts 6.30x)
+                    start   method     min     max      mean     std  speed-up
+                     ones    power     471     471     471.0     0.0     1.00x
+                            static      88      88      88.0     0.0     5.35x
+                           dynamic      83      83      83.0     0.0     5.67x
+      random non-negative    power     490     494     492.1     0.9     1.00x
+                            static      91      91      91.0     0.0     5.41x
+                           dynamic      85      85      85.0     0.0     5.79x
+            random signed    power     575     674     604.8    21.8     1.00x
+                            static     105     121     109.5     3.5     5.52x
+                           dynamic     127     224     157.5    21.5     3.84x
+
+  d = 0.99   (theory predicts 14.13x)
+                    start   method     min     max      mean     std  speed-up
+                     ones    power    2377    2377    2377.0     0.0     1.00x
+                            static     197     197     197.0     0.0    12.07x
+                           dynamic     182     182     182.0     0.0    13.06x
+      random non-negative    power    2474    2497    2484.0     4.6     1.00x
+                            static     204     206     204.9     0.4    12.13x
+                           dynamic     188     190     188.7     0.5    13.16x
+            random signed    power    2928    3534    3059.7   104.9     1.00x
+                            static     237     281     246.8     7.6    12.40x
+                           dynamic     425    1018     551.3   102.5     5.55x
+
+wrote result/exp6_robustness.csv
+
+==========================================================================
+Part B - wall-clock cost, and whether matvec counts are a fair metric
+==========================================================================
+    method   ms per matvec   vs power
+     power       0.1785 ms     1.000x
+    static       0.1917 ms     1.074x
+   dynamic       0.1965 ms     1.101x
+
+  The momentum term is a scaled vector subtraction; the matrix-vector
+  product dominates, so a matvec is the same price for all three methods
+  and iteration counts compare them fairly.
+
+        d   speed-up by matvecs   speed-up by wall-clock
+     0.85                 3.27x                    2.98x
+     0.95                 5.79x                    5.16x
+     0.99                13.16x                   11.82x
+
+wrote result/exp6_cost.csv
+  wrote figure/exp6_robustness.pdf and .png
+
+==========================================================================
+VERDICT
+==========================================================================
+  Algorithm 3.1 converged on 303/303 runs, every starting vector, every damping factor.
+
+  Speed-up over the power iteration, by family of starting vector:
+                     ones   d=0.85:  3.19x   d=0.95:  5.67x   d=0.99: 13.06x
+      random non-negative   d=0.85:  3.28x   d=0.95:  5.79x   d=0.99: 13.16x
+            random signed   d=0.85:  2.69x   d=0.95:  3.84x   d=0.99:  5.55x
+
+  The headline result is robust to any NON-NEGATIVE start, which is the
+  only kind that means anything for PageRank: scores are a distribution.
+  Under the paper's signed stress test the dynamic method slows down and
+  becomes more variable than the static one - the same sensitivity the
+  paper itself reports in its Table 1. It still beats the power iteration.
+
+################  experiment/exp7_generality.py  ################
+
+==========================================================================
+ca-GrQc
+==========================================================================
+  5,242 nodes, 28,968 links, 1 dangling
+  max |Im lambda| of G = 4.95e-15   (REAL spectrum)
+        d    power   static  dynamic |   dynamic   theory  % of theory
+  ------------------------------------------------------------------
+     0.85      157       51       48 |     3.27x    3.60x        90.8%
+      0.9      242       64       60 |     4.03x    4.43x        91.0%
+     0.95      496       92       85 |     5.84x    6.30x        92.7%
+     0.99     2522      208      192 |    13.14x   14.13x        93.0%
+    0.999    25262      656      634 |    39.85x   44.72x        89.1%
+
+==========================================================================
+ca-HepTh
+==========================================================================
+  9,877 nodes, 51,946 links, 2 dangling
+  max |Im lambda| of G = 5.54e-09   (complex)
+        d    power   static  dynamic |   dynamic   theory  % of theory
+  ------------------------------------------------------------------
+     0.85      154       50       48 |     3.21x    3.60x        89.0%
+      0.9      236       62       59 |     4.00x    4.43x        90.2%
+     0.95      484       90       84 |     5.76x    6.30x        91.5%
+     0.99     2466      203      187 |    13.19x   14.13x        93.3%
+    0.999    24736      644      599 |    41.30x   44.72x        92.3%
+
+==========================================================================
+ca-HepPh
+==========================================================================
+  12,008 nodes, 236,978 links, 2 dangling
+  max |Im lambda| of G = 1.02e-23   (REAL spectrum)
+        d    power   static  dynamic |   dynamic   theory  % of theory
+  ------------------------------------------------------------------
+     0.85      150       49       47 |     3.19x    3.60x        88.6%
+      0.9      231       61       58 |     3.98x    4.43x        89.8%
+     0.95      471       88       83 |     5.67x    6.30x        90.1%
+     0.99     2377      197      182 |    13.06x   14.13x        92.4%
+    0.999    23777      622      567 |    41.93x   44.72x        93.8%
+
+==========================================================================
+ca-AstroPh
+==========================================================================
+  18,772 nodes, 396,100 links, 1 dangling
+  max |Im lambda| of G = 6.22e-19   (REAL spectrum)
+        d    power   static  dynamic |   dynamic   theory  % of theory
+  ------------------------------------------------------------------
+     0.85      148       48       46 |     3.22x    3.60x        89.3%
+      0.9      227       60       58 |     3.91x    4.43x        88.3%
+     0.95      465       87       82 |     5.67x    6.30x        90.0%
+     0.99     2364      196      181 |    13.06x   14.13x        92.4%
+    0.999    23713      621      564 |    42.04x   44.72x        94.0%
+
+==========================================================================
+ca-CondMat
+==========================================================================
+  23,133 nodes, 186,878 links, 0 dangling
+  max |Im lambda| of G = 9.99e-12   (REAL spectrum)
+        d    power   static  dynamic |   dynamic   theory  % of theory
+  ------------------------------------------------------------------
+     0.85      151       49       47 |     3.21x    3.60x        89.2%
+      0.9      232       61       58 |     4.00x    4.43x        90.2%
+     0.95      476       88       83 |     5.73x    6.30x        91.1%
+     0.99     2420      200      184 |    13.15x   14.13x        93.1%
+    0.999    24285      634      581 |    41.80x   44.72x        93.5%
+
+wrote result/exp7_generality.csv
+  wrote figure/exp7_generality.pdf and .png
+
+==========================================================================
+SUMMARY
+==========================================================================
+d             0.850    0.900    0.950    0.990    0.999
+graph                                                  
+ca-GrQc        3.27     4.03     5.84    13.14    39.85
+ca-HepTh       3.21     4.00     5.76    13.19    41.30
+ca-HepPh       3.19     3.98     5.67    13.06    41.93
+ca-AstroPh     3.22     3.91     5.67    13.06    42.04
+ca-CondMat     3.21     4.00     5.73    13.15    41.80
+theory         3.60     4.43     6.30    14.13    44.72
+
+  Across 5 graphs x 5 damping factors = 25 PageRank problems:
+    every run converged            : True
+    spectra real (max |Im lambda|) : 5.5e-09 over all graphs
+    fraction of theory attained    : 88.3% to 94.0%  (mean 91.1%)
+
+  The acceleration is a property of undirected graphs, not of one dataset.
+
+################  experiment/exp8_limitations.py  ################
+
+==========================================================================
+1. The spectrum: undirected vs directed
+==========================================================================
+  ca-HepPh       (UNDIRECTED) n= 12,008  38 eigenvalues sampled
+                   max |Im lambda| = 2.838e-14
+  web-Stanford   (DIRECTED  ) n=281,903  59 eigenvalues sampled
+                   max |Im lambda| = 9.900e-01
+
+  The directed graph's spectrum is roughly 3e+13 times further
+  off the real axis. That single difference is the whole story.
+
+==========================================================================
+2. What a complex spectrum does to the augmented matrix
+==========================================================================
+  ca-HepPh       beta = d^2/4 = 0.2450,  sqrt(beta) = 0.4950
+                 strongest rival |mu| = 0.4950   |mu(lambda_1)| = 0.5705
+                 rivals that OVERTAKE the dominant mode: 0 of 38   -> converges
+  web-Stanford   beta = d^2/4 = 0.2450,  sqrt(beta) = 0.4950
+                 strongest rival |mu| = 1.1950   |mu(lambda_1)| = 0.5705
+                 rivals that OVERTAKE the dominant mode: 55 of 59   -> DIVERGES
+                 worst: lambda = -0.0000+0.9900i, |lambda| = 0.9900, arg = +90.0 deg, |mu| = 1.1950
+                 |mu| > 1, so this mode GROWS: the iteration does not
+                 merely lose the race, it diverges outright.
+                 What makes a mode damaging is its ANGLE, not its size:
+                 this one sits 90 degrees off the real axis, which is
+                 the worst case the disk |lambda| <= d allows.
+
+==========================================================================
+3. Convergence rate on web-Stanford
+==========================================================================
+  GoogleMatrix('web-Stanford', n=281903, nnz=2312497, d=0.85, dangling=172)
+        d     power    static   dynamic |  theory said   outcome
+  ------------------------------------------------------------------
+     0.85       152     5001!     5000! |        3.60x   momentum FAILED
+     0.95       478     5001!     5000! |        6.30x   momentum FAILED
+     0.99      2428     5001!     5000! |       14.13x   momentum FAILED
+
+  ! = did not converge within the budget
+
+wrote result/exp8_limitations_spectrum.csv and _runs.csv
+  wrote figure/exp8_limitations.pdf and .png
+
+==========================================================================
+THE BOUNDARY OF THE RESULT
+==========================================================================
+  Works   : undirected graphs. Real spectrum, every rival folded onto
+            sqrt(beta), 3.2x-42x measured across 25 PageRank problems.
+  Fails   : directed graphs. Complex spectrum, rivals escape the circle,
+            and Algorithm 3.1 diverges at every damping factor tested.
+  Cause   : one structural property - whether the graph has direction.
+
+  This is a statement about the Google matrix, not about our code:
+  experiment 1 reproduces the paper's own benchmarks, and the plain
+  power iteration converges normally on web-Stanford throughout.
+
+ALL EXPERIMENTS COMPLETE
+  results -> result/     figures -> figure/

@@ -1,0 +1,7 @@
+graph,d,method,k,matvecs_residual,matvecs_precision,matvecs_kendall,ranking_speedup,converged
+ca-HepPh,0.85,power,100,150,17,22,8.823529411764707,True
+ca-HepPh,0.85,static,100,49,8,10,6.125,True
+ca-HepPh,0.85,dynamic,100,47,9,9,5.222222222222222,True
+ca-HepPh,0.99,power,100,2377,50,49,47.54,True
+ca-HepPh,0.99,static,100,197,24,24,8.208333333333334,True
+ca-HepPh,0.99,dynamic,100,182,10,19,18.2,True
